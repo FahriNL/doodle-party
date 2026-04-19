@@ -319,11 +319,14 @@ h1 {
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-.qr-container img,
-.qr-container canvas {
+.qr-container img {
     display: block !important;
     width: 200px !important;
     height: 200px !important;
+}
+
+.qr-container canvas {
+    display: none !important;
 }
 
 /* ===========================
