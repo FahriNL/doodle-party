@@ -12,6 +12,7 @@ let lastX = 0;
 let lastY = 0;
 let currentColor = 'black';
 let brushSize = 5;
+let currentBrushType = 'marker'; // New
 let currentOpacity = 1.0;
 let isEraser = false;
 
@@ -27,13 +28,13 @@ function initClient() {
     // Check if room ID is in URL hash
     const roomId = window.location.hash.substring(1);
     if (!roomId) {
-        alert("No Room ID found! Please scan the QR code on the PC screen.");
+        alert("ID Ruangan tidak ditemukan! Silakan pindai kode QR di layar PC.");
         return;
     }
 }
 
 function joinGame() {
-    const playerName = document.getElementById('player-name').value || "Artist " + Math.floor(Math.random() * 100);
+    const playerName = document.getElementById('player-name').value || "Seniman " + Math.floor(Math.random() * 100);
     const roomId = window.location.hash.substring(1);
 
     peer = new Peer();
@@ -46,7 +47,7 @@ function joinGame() {
 
     peer.on('error', (err) => {
         console.error('Peer error:', err);
-        alert('Connection error. Is the Room ID correct?');
+        alert('Kesalahan koneksi. Apakah ID Ruangan benar?');
     });
 }
 
@@ -61,7 +62,7 @@ function setupClientConnection(name) {
     });
 
     conn.on('close', () => {
-        alert('Lost connection to host.');
+        alert('Koneksi ke host terputus.');
         location.reload();
     });
 }
@@ -70,12 +71,12 @@ function handleHostData(data) {
     switch(data.type) {
         case 'JOIN_SUCCESS':
             switchScreen('waiting-screen');
-            document.getElementById('waiting-message').innerText = "Waiting for the host to start the game...";
+            document.getElementById('waiting-message').innerText = "Menunggu host untuk memulai permainan...";
             break;
 
         case 'START_GAME':
             currentMode = data.mode;
-            document.getElementById('current-mode').innerText = data.mode.toUpperCase();
+            document.getElementById('current-mode').innerText = data.mode === 'freeplay' ? 'MAIN BEBAS' : 'PERTARUNGAN';
             switchScreen('drawing-screen');
             doodleCanvas.clear();
             doodleCanvas.resize();
@@ -92,7 +93,7 @@ function handleHostData(data) {
         case 'BATTLE_INFO':
             // Show theme in the status bar instead of alert
             const statusMode = document.getElementById('current-mode');
-            statusMode.innerText = 'BATTLE';
+            statusMode.innerText = 'PERTARUNGAN';
             const themeDisplay = document.getElementById('battle-theme-display');
             if (themeDisplay) {
                 themeDisplay.innerText = data.theme;
@@ -118,7 +119,7 @@ function handleHostData(data) {
                 const imageData = doodleCanvas.getImageData();
                 conn.send({ type: 'SUBMIT_DOODLE', image: imageData });
                 switchScreen('waiting-screen');
-                document.getElementById('waiting-message').innerText = "Doodle submitted! Waiting for others...";
+                document.getElementById('waiting-message').innerText = "Doodle dikirim! Menunggu pemain lain...";
             }
             break;
 
@@ -128,7 +129,7 @@ function handleHostData(data) {
 
         case 'GAME_OVER':
             switchScreen('waiting-screen');
-            document.getElementById('waiting-message').innerHTML = `<h3>Game Over!</h3><p>Winner: ${data.winner}</p>`;
+            document.getElementById('waiting-message').innerHTML = `<h3>Permainan Selesai!</h3><p>Pemenang: ${data.winner}</p>`;
             break;
     }
 }
@@ -162,6 +163,7 @@ function setupDrawingEvents() {
             y2: currY,
             color: isEraser ? 'white' : currentColor,
             size: brushSize,
+            brushType: isEraser ? 'marker' : currentBrushType, // Added
             opacity: isEraser ? 1.0 : currentOpacity,
             aspectRatio: getCanvasAspectRatio()
         };
@@ -174,8 +176,8 @@ function setupDrawingEvents() {
             currentGesture.push(stroke);
         }
 
-        // Send to host if in freeplay
-        if (currentMode === 'freeplay' && conn && conn.open) {
+        // Send to host for real-time display
+        if (conn && conn.open) {
             conn.send({ type: 'DRAW', stroke: stroke });
         }
 
@@ -235,6 +237,17 @@ function setupToolbar() {
         });
     });
 
+    // Brush type buttons
+    document.querySelectorAll('.brush-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.brush-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentBrushType = btn.dataset.type;
+            isEraser = false;
+            document.getElementById('eraser-btn').classList.remove('active');
+        });
+    });
+
     // Opacity slider
     const opacitySlider = document.getElementById('opacity-slider');
     if (opacitySlider) {
@@ -246,13 +259,6 @@ function setupToolbar() {
     }
 }
 
-function setBrush(size) {
-    brushSize = size;
-    document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
-    const target = document.querySelector(`.brush-btn[data-size="${size}"]`);
-    if (target) target.classList.add('active');
-}
-
 function toggleEraser() {
     isEraser = !isEraser;
     document.getElementById('eraser-btn').classList.toggle('active', isEraser);
@@ -262,6 +268,7 @@ function clearCanvas() {
     doodleCanvas.clear();
     strokeHistory = [];
     currentGesture = [];
+    // Also clear host if possible? (Host only receives strokes, doesn't usually clear remotely unless mode changes)
 }
 
 function undoLastStroke() {
@@ -280,7 +287,7 @@ function sendVote(val) {
     if (conn && conn.open) {
         conn.send({ type: 'VOTE', value: val });
         switchScreen('waiting-screen');
-        document.getElementById('waiting-message').innerText = "Vote sent! Waiting for results...";
+        document.getElementById('waiting-message').innerText = "Suara terkirim! Menunggu hasil...";
     }
 }
 

@@ -75,9 +75,8 @@ class DoodleCanvas {
     }
 
     drawStroke(data) {
-        // Data format: { x1, y1, x2, y2, color, size, opacity?, aspectRatio? }
-        // x, y are normalized (0 to 1) for cross-screen compatibility
-        const { x1, y1, x2, y2, color, size, opacity, aspectRatio } = data;
+        // Data format: { x1, y1, x2, y2, color, size, opacity?, aspectRatio?, brushType? }
+        const { x1, y1, x2, y2, color, size, opacity, aspectRatio, brushType } = data;
 
         const fit = this.getFitRect(aspectRatio);
         
@@ -86,21 +85,69 @@ class DoodleCanvas {
         const px2 = fit.offsetX + x2 * fit.drawWidth;
         const py2 = fit.offsetY + y2 * fit.drawHeight;
 
-        // Save context state
         this.ctx.save();
-
         this.ctx.globalAlpha = (opacity !== undefined && opacity !== null) ? opacity : 1.0;
-        this.ctx.beginPath();
         this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = size * (fit.drawWidth / 1000); // Scale brush relative to draw area
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
-        this.ctx.moveTo(px1, py1);
-        this.ctx.lineTo(px2, py2);
-        this.ctx.stroke();
-        this.ctx.closePath();
+        this.ctx.fillStyle = color;
+        const baseSize = size * (fit.drawWidth / 1000);
 
-        // Restore context state
+        switch (brushType) {
+            case 'pencil':
+                this.ctx.lineWidth = Math.max(0.5, baseSize * 0.3);
+                this.ctx.lineCap = 'butt';
+                this.ctx.globalAlpha *= 0.8;
+                this.ctx.beginPath();
+                this.ctx.moveTo(px1, py1);
+                this.ctx.lineTo(px2, py2);
+                this.ctx.stroke();
+                break;
+
+            case 'calligraphy':
+                this.ctx.lineWidth = baseSize;
+                this.ctx.lineCap = 'square';
+                // Simulate calligraphy with multiple lines or slanted strokes
+                for (let i = 0; i < 5; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(px1 + i, py1 - i);
+                    this.ctx.lineTo(px2 + i, py2 - i);
+                    this.ctx.stroke();
+                }
+                break;
+
+            case 'spray':
+                const density = 20;
+                const radius = baseSize * 2;
+                for (let i = 0; i < density; i++) {
+                    const r = Math.random() * radius;
+                    const angle = Math.random() * Math.PI * 2;
+                    const ox = Math.cos(angle) * r;
+                    const oy = Math.sin(angle) * r;
+                    this.ctx.fillRect(px2 + ox, py2 + oy, 1, 1);
+                }
+                break;
+
+            case 'charcoal':
+                this.ctx.lineWidth = baseSize;
+                this.ctx.lineCap = 'round';
+                this.ctx.setLineDash([Math.random() * 5, Math.random() * 5]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(px1, py1);
+                this.ctx.lineTo(px2, py2);
+                this.ctx.stroke();
+                break;
+
+            case 'marker':
+            default:
+                this.ctx.lineWidth = baseSize;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(px1, py1);
+                this.ctx.lineTo(px2, py2);
+                this.ctx.stroke();
+                break;
+        }
+
         this.ctx.restore();
     }
 

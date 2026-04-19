@@ -12,22 +12,23 @@ let battleTimer;
 let lastKnownAspectRatio = null;
 
 // Predefined Themes for Battle Mode
+// Predefined Themes for Battle Mode in Indonesian
 const themes = [
-    "A cat riding a skateboard",
-    "The world's saddest pizza",
-    "A superhero with a useless power",
-    "Undersea disco party",
-    "A haunted toaster",
-    "Mars colony in 2077",
-    "Dinosaur's first day at school",
-    "A very rich potato",
-    "Alien tourist at a beach",
-    "Surprised cloud",
-    "Robot learning to dance",
-    "A penguin in a business meeting",
-    "Spaghetti tornado",
-    "Time-traveling snail",
-    "Whale in space"
+    "Kucing naik skateboard",
+    "Pizza paling sedih di dunia",
+    "Pahlawan super dengan kekuatan tidak berguna",
+    "Pesta disko di bawah laut",
+    "Pemanggang roti berhantu",
+    "Koloni Mars tahun 2077",
+    "Hari pertama dinosaurus di sekolah",
+    "Kentang yang sangat kaya",
+    "Turis alien di pantai",
+    "Awan yang terkejut",
+    "Robot belajar menari",
+    "Penguin dalam rapat bisnis",
+    "Tornado spageti",
+    "Siput penjelajah waktu",
+    "Paus di luar angkasa"
 ];
 
 function initHost() {
@@ -35,7 +36,7 @@ function initHost() {
     
     // Create random ID for the room
     const roomId = 'DOODLE-' + Math.random().toString(36).substr(2, 5).toUpperCase();
-    document.getElementById('room-code').innerText = `ROOM ID: ${roomId}`;
+    document.getElementById('room-code').innerText = `ID RUANGAN: ${roomId}`;
 
     peer = new Peer(roomId);
 
@@ -47,7 +48,7 @@ function initHost() {
         // Mark status as connected
         const statusEl = document.getElementById('connection-status');
         if (statusEl) {
-            statusEl.innerText = '🟢 Connected';
+            statusEl.innerText = '🟢 Terhubung';
             statusEl.style.color = 'var(--success)';
         }
     });
@@ -60,7 +61,7 @@ function initHost() {
         console.error('Peer error:', err);
         const statusEl = document.getElementById('connection-status');
         if (statusEl) {
-            statusEl.innerText = '🔴 Connection Error';
+            statusEl.innerText = '🔴 Kesalahan Koneksi';
             statusEl.style.color = 'var(--danger)';
         }
     });
@@ -70,6 +71,7 @@ function generateQRCode(roomId) {
     const url = `${window.location.origin}${window.location.pathname.replace('index.html', '')}mobile.html#${roomId}`;
     
     const qrContainer = document.getElementById("qrcode");
+    qrContainer.innerHTML = ''; // Clear existing QR code to prevent duplication
     
     try {
         new QRCode(qrContainer, {
@@ -88,7 +90,7 @@ function generateQRCode(roomId) {
     const linkEl = document.createElement('a');
     linkEl.href = url;
     linkEl.target = '_blank';
-    linkEl.textContent = 'Open join link ↗';
+    linkEl.textContent = 'Buka tautan gabung ↗';
     linkEl.style.cssText = 'display:block; margin-top:0.75rem; color:var(--accent-primary); font-size:0.85rem; text-decoration:underline;';
     qrContainer.parentElement.insertBefore(linkEl, qrContainer.nextSibling);
 
@@ -125,13 +127,11 @@ function handleClientData(conn, data) {
             break;
 
         case 'DRAW':
-            if (currentMode === 'freeplay') {
-                // Track aspect ratio from the first stroke for guide drawing
-                if (data.stroke.aspectRatio && !lastKnownAspectRatio) {
-                    lastKnownAspectRatio = data.stroke.aspectRatio;
-                }
-                doodleCanvas.drawStroke(data.stroke);
+            // Track aspect ratio from the first stroke for guide drawing
+            if (data.stroke.aspectRatio && !lastKnownAspectRatio) {
+                lastKnownAspectRatio = data.stroke.aspectRatio;
             }
+            doodleCanvas.drawStroke(data.stroke);
             break;
 
         case 'SUBMIT_DOODLE':
@@ -154,12 +154,12 @@ function updatePlayerCount() {
     
     const playerCountEl = document.getElementById('player-count');
     if (count === 0) {
-        playerCountEl.innerHTML = `<span style="color: var(--text-muted);">Waiting for players... (0)</span>`;
+        playerCountEl.innerHTML = `<span style="color: var(--text-muted);">Menunggu pemain... (0)</span>`;
     } else {
-        playerCountEl.innerHTML = `<span style="color: var(--success);">🎮 ${count} player${count > 1 ? 's' : ''} ready!</span><br><small style="color: var(--text-muted);">${names.join(', ')}</small>`;
+        playerCountEl.innerHTML = `<span style="color: var(--success);">🎮 ${count} pemain bersiap!</span><br><small style="color: var(--text-muted);">${names.join(', ')}</small>`;
     }
     
-    document.getElementById('active-players').innerText = `Players: ${count}`;
+    document.getElementById('active-players').innerText = `Pemain: ${count}`;
 }
 
 function startGame(mode) {
@@ -185,7 +185,7 @@ function startBattleMode() {
     doodleCanvas.clear();
     
     const theme = themes[Math.floor(Math.random() * themes.length)];
-    document.getElementById('battle-theme').innerText = `🎨 Theme: ${theme}`;
+    document.getElementById('battle-theme').innerText = `🎨 Tema: ${theme}`;
     document.getElementById('battle-header').classList.remove('hidden');
     
     const selectedTime = parseInt(document.getElementById('battle-time-select').value) || 180;
@@ -235,7 +235,7 @@ async function startRevealProcess() {
         const doodle = doodles[i];
         
         document.getElementById('reveal-image').src = doodle.image;
-        document.getElementById('reveal-title').innerText = `Doodle by: ???`;
+        document.getElementById('reveal-title').innerText = `Gambar oleh: ???`;
         document.getElementById('reveal-counter').innerText = `${i + 1} / ${doodles.length}`;
         
         broadcast({ type: 'START_VOTING' });
@@ -248,7 +248,7 @@ async function startRevealProcess() {
         const totalScore = Object.values(votes).reduce((a, b) => a + b, 0);
         players[doodle.playerId].score += totalScore;
 
-        document.getElementById('reveal-title').innerText = `🎨 ${doodle.name} — Score: ${totalScore}`;
+        document.getElementById('reveal-title').innerText = `🎨 ${doodle.name} — Skor: ${totalScore}`;
         await new Promise(r => setTimeout(r, 3000)); // Show name for 3 seconds
     }
 
@@ -274,7 +274,7 @@ function waitForVotes() {
 function updateVotingStatus() {
     const voteCount = Object.keys(votes).length;
     const playerCount = Object.keys(players).length;
-    document.getElementById('voting-status').innerText = `Waiting for votes... (${voteCount}/${playerCount})`;
+    document.getElementById('voting-status').innerText = `Menunggu suara... (${voteCount}/${playerCount})`;
 }
 
 function showFinalResults() {
@@ -299,7 +299,7 @@ function showFinalResults() {
     document.getElementById('winner-display').innerHTML = leaderboardHTML;
     
     const winner = sortedPlayers[0];
-    broadcast({ type: 'GAME_OVER', winner: winner ? winner.name : 'No one', score: winner ? winner.score : 0 });
+    broadcast({ type: 'GAME_OVER', winner: winner ? winner.name : 'Tidak ada', score: winner ? winner.score : 0 });
 }
 
 function formatTime(seconds) {
