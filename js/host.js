@@ -132,6 +132,11 @@ function handleClientData(conn, data) {
                 lastKnownAspectRatio = data.stroke.aspectRatio;
             }
             doodleCanvas.drawStroke(data.stroke);
+            
+            // Shared mobile progress (Freeplay only)
+            if (currentMode === 'freeplay') {
+                broadcast(data);
+            }
             break;
 
         case 'SUBMIT_DOODLE':

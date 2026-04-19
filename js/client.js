@@ -131,6 +131,13 @@ function handleHostData(data) {
             switchScreen('waiting-screen');
             document.getElementById('waiting-message').innerHTML = `<h3>Permainan Selesai!</h3><p>Pemenang: ${data.winner}</p>`;
             break;
+
+        case 'DRAW':
+            // Render strokes from other players (Sync)
+            if (doodleCanvas) {
+                doodleCanvas.drawStroke(data.stroke);
+            }
+            break;
     }
 }
 
