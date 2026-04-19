@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Doodle Party Controller</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <!-- Join Screen -->
+    <div id="join-screen" class="screen">
+        <h1 class="logo-font">Doodle Party</h1>
+        <div class="glass" style="width: 80%;">
+            <input type="text" id="player-name" placeholder="Your Name" class="glass" style="width: 100%; padding: 1rem; color: white; margin-bottom: 1rem; outline: none; border: 1px solid var(--accent-primary);">
+            <button onclick="joinGame()" class="glass" style="width: 100%; cursor: pointer; background: var(--accent-primary);">Join Game</button>
+        </div>
+    </div>
+
+    <!-- Drawing Screen -->
+    <div id="drawing-screen" class="screen hidden">
+        <div id="status-bar" style="height: 40px; width: 100%; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent-tertiary);">
+            MODE: <span id="current-mode">FREEPLAY</span>
+        </div>
+        
+        <div id="mobile-canvas-container">
+            <canvas id="mobile-canvas"></canvas>
+        </div>
+
+        <div class="toolbar">
+            <div id="color-picker" style="display: flex; gap: 8px;">
+                <div class="color-swatch active" style="background: black;" data-color="black"></div>
+                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></div>
+                <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                <div class="color-swatch" style="background: #10b981;" data-color="#10b981"></div>
+            </div>
+            
+            <button onclick="clearCanvas()" class="tool-btn">🗑️</button>
+            <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn">🧽</button>
+            
+            <div id="brush-size" style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 5px; height: 5px; background: white; border-radius: 50%;" onclick="setBrush(5)"></div>
+                <div style="width: 15px; height: 15px; background: white; border-radius: 50%;" onclick="setBrush(15)"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voting Screen -->
+    <div id="voting-screen" class="screen hidden">
+        <h2 style="margin-bottom: 2rem;">How do you rate it?</h2>
+        <div class="voting-grid">
+            <button class="vote-btn" onclick="sendVote(1)">1</button>
+            <button class="vote-btn" onclick="sendVote(2)">2</button>
+            <button class="vote-btn" onclick="sendVote(3)">3</button>
+            <button class="vote-btn" onclick="sendVote(4)">4</button>
+            <button class="vote-btn" onclick="sendVote(5)">5</button>
+            <button class="vote-btn" onclick="sendVote(6)">6</button>
+        </div>
+    </div>
+
+    <!-- Waiting Screen -->
+    <div id="waiting-screen" class="screen hidden">
+        <div class="glass" style="text-align: center;">
+            <div style="font-size: 3rem; animation: float 2s infinite ease-in-out;">⏳</div>
+            <h3>Waiting for Host...</h3>
+            <p id="waiting-message" style="color: var(--text-muted); margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <script src="js/drawing.js"></script>
+    <script src="js/client.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doodle Party - PC Screen</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="lobby-screen" class="screen">
+        <h1 class="logo-font">Doodle Party</h1>
+        <div class="glass lobby-info">
+            <p>Scan to join the fun!</p>
+            <div id="qrcode" class="qr-container"></div>
+            <p id="room-code" style="font-family: monospace; font-size: 1.2rem; color: var(--accent-tertiary);"></p>
+            <div id="player-count">Wait for players... (0)</div>
+            <div style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <label>Battle Time:</label>
+                <select id="battle-time-select" class="glass" style="padding: 0.5rem; color: white; background: #222;">
+                    <option value="180">3 Minutes</option>
+                    <option value="240">4 Minutes</option>
+                    <option value="300">5 Minutes</option>
+                    <option value="360">6 Minutes</option>
+                </select>
+            </div>
+            <div style="margin-top: 2rem;">
+                <button onclick="startGame('freeplay')" class="glass" style="margin-right: 1rem; cursor: pointer;">Freeplay Mode</button>
+                <button onclick="startGame('battle')" class="glass" style="cursor: pointer;">Battle Mode</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden">
+        <div class="players-badge glass">
+            <div id="active-players">Players: 0</div>
+            <div id="game-timer" style="color: var(--accent-secondary); font-weight: 800; font-size: 1.5rem;"></div>
+        </div>
+        
+        <div id="battle-header" style="position: absolute; top: 20px; width: 100%; text-align: center;" class="hidden">
+            <h2 id="battle-theme" style="font-size: 2.5rem; color: var(--accent-primary);">Theme: Loading...</h2>
+        </div>
+
+        <div id="host-canvas-container">
+            <canvas id="host-canvas"></canvas>
+        </div>
+    </div>
+
+    <div id="reveal-screen" class="screen hidden">
+        <h2 id="reveal-title" style="margin-bottom: 1rem;">Who drew this?</h2>
+        <div id="reveal-container">
+            <img id="reveal-image" src="" alt="Doodle">
+        </div>
+        <div id="voting-status" class="glass" style="margin-top: 2rem;">
+            Waiting for votes... (0/0)
+        </div>
+    </div>
+
+    <div id="winner-screen" class="screen hidden">
+        <h1 style="font-size: 4rem; color: gold;">THE WINNER IS...</h1>
+        <div id="winner-display" class="glass" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center;">
+            <!-- Winner logic here -->
+        </div>
+        <button onclick="location.reload()" class="glass" style="margin-top: 2rem; cursor: pointer;">Play Again</button>
+    </div>
+
+    <script src="js/drawing.js"></script>
+    <script src="js/host.js"></script>
+</body>
+</html>
