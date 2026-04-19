@@ -4,42 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doodle Party - PC Screen</title>
+    <meta name="description" content="Doodle Party — A real-time multiplayer drawing game. Your PC is the big screen, your phone is the canvas!">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+    <!-- Animated background blobs -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <!-- Lobby Screen -->
     <div id="lobby-screen" class="screen">
-        <h1 class="logo-font">Doodle Party</h1>
+        <h1 class="logo-font" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Doodle Party</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">Your phone is the brush. This screen is the canvas.</p>
+        
         <div class="glass lobby-info">
-            <p>Scan to join the fun!</p>
+            <p style="font-size: 1.1rem; font-weight: 600;">📱 Scan to join the fun!</p>
             <div id="qrcode" class="qr-container"></div>
-            <p id="room-code" style="font-family: monospace; font-size: 1.2rem; color: var(--accent-tertiary);"></p>
-            <div id="player-count">Wait for players... (0)</div>
-            <div style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <label>Battle Time:</label>
-                <select id="battle-time-select" class="glass" style="padding: 0.5rem; color: white; background: #222;">
-                    <option value="180">3 Minutes</option>
-                    <option value="240">4 Minutes</option>
-                    <option value="300">5 Minutes</option>
-                    <option value="360">6 Minutes</option>
-                </select>
+            <p id="room-code" class="room-code"></p>
+            <p id="connection-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">⏳ Connecting...</p>
+            
+            <div id="player-count" style="margin-top: 1rem; font-size: 1rem;">
+                <span style="color: var(--text-muted);">Waiting for players... (0)</span>
             </div>
-            <div style="margin-top: 2rem;">
-                <button onclick="startGame('freeplay')" class="glass" style="margin-right: 1rem; cursor: pointer;">Freeplay Mode</button>
-                <button onclick="startGame('battle')" class="glass" style="cursor: pointer;">Battle Mode</button>
+
+            <div class="lobby-controls">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <label style="font-size: 0.9rem;">⏱ Battle Time:</label>
+                    <select id="battle-time-select" class="select-field">
+                        <option value="180">3 Minutes</option>
+                        <option value="240">4 Minutes</option>
+                        <option value="300">5 Minutes</option>
+                        <option value="360" selected>6 Minutes</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    <button onclick="startGame('freeplay')" class="btn-mode btn-freeplay" id="btn-freeplay">🎨 Freeplay Mode</button>
+                    <button onclick="startGame('battle')" class="btn-mode btn-battle" id="btn-battle">⚔️ Battle Mode</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
         <div class="players-badge glass">
             <div id="active-players">Players: 0</div>
-            <div id="game-timer" style="color: var(--accent-secondary); font-weight: 800; font-size: 1.5rem;"></div>
+            <div id="game-timer" class="game-timer"></div>
         </div>
         
-        <div id="battle-header" style="position: absolute; top: 20px; width: 100%; text-align: center;" class="hidden">
-            <h2 id="battle-theme" style="font-size: 2.5rem; color: var(--accent-primary);">Theme: Loading...</h2>
+        <div id="battle-header" class="battle-header hidden">
+            <h2 id="battle-theme" class="battle-theme-text">🎨 Theme: Loading...</h2>
         </div>
 
         <div id="host-canvas-container">
@@ -47,22 +64,25 @@
         </div>
     </div>
 
+    <!-- Reveal Screen -->
     <div id="reveal-screen" class="screen hidden">
-        <h2 id="reveal-title" style="margin-bottom: 1rem;">Who drew this?</h2>
+        <h2 id="reveal-title" class="reveal-title">Who drew this?</h2>
+        <small id="reveal-counter" style="color: var(--text-muted); margin-bottom: 1rem;">1 / 1</small>
         <div id="reveal-container">
             <img id="reveal-image" src="" alt="Doodle">
         </div>
-        <div id="voting-status" class="glass" style="margin-top: 2rem;">
+        <div id="voting-status" class="glass" style="margin-top: 2rem; font-size: 1.1rem;">
             Waiting for votes... (0/0)
         </div>
     </div>
 
+    <!-- Winner Screen -->
     <div id="winner-screen" class="screen hidden">
-        <h1 style="font-size: 4rem; color: gold;">THE WINNER IS...</h1>
-        <div id="winner-display" class="glass" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center;">
-            <!-- Winner logic here -->
+        <h1 class="winner-title">🏆 Final Results</h1>
+        <div id="winner-display" class="glass leaderboard">
+            <!-- Leaderboard rows injected here -->
         </div>
-        <button onclick="location.reload()" class="glass" style="margin-top: 2rem; cursor: pointer;">Play Again</button>
+        <button onclick="location.reload()" class="btn-primary" style="margin-top: 2rem;">🔄 Play Again</button>
     </div>
 
     <script src="js/drawing.js"></script>

@@ -11,58 +11,95 @@
     <!-- Join Screen -->
     <div id="join-screen" class="screen">
         <h1 class="logo-font">Doodle Party</h1>
-        <div class="glass" style="width: 80%;">
-            <input type="text" id="player-name" placeholder="Your Name" class="glass" style="width: 100%; padding: 1rem; color: white; margin-bottom: 1rem; outline: none; border: 1px solid var(--accent-primary);">
-            <button onclick="joinGame()" class="glass" style="width: 100%; cursor: pointer; background: var(--accent-primary);">Join Game</button>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Enter your name and join!</p>
+        <div class="glass" style="width: 85%; max-width: 400px;">
+            <input type="text" id="player-name" placeholder="Your Name" class="input-field" maxlength="16">
+            <button onclick="joinGame()" class="btn-primary" id="join-btn">🎨 Join Game</button>
         </div>
     </div>
 
     <!-- Drawing Screen -->
     <div id="drawing-screen" class="screen hidden">
-        <div id="status-bar" style="height: 40px; width: 100%; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent-tertiary);">
-            MODE: <span id="current-mode">FREEPLAY</span>
+        <!-- Status Bar: mode + theme + timer -->
+        <div id="status-bar" class="status-bar">
+            <span id="current-mode" class="mode-badge">FREEPLAY</span>
+            <span id="battle-theme-display" class="theme-text" style="display:none;"></span>
+            <span id="mobile-timer" class="timer-text" style="display:none;"></span>
         </div>
         
+        <!-- Canvas -->
         <div id="mobile-canvas-container">
             <canvas id="mobile-canvas"></canvas>
         </div>
 
+        <!-- Toolbar — ergonomic two-row layout -->
         <div class="toolbar">
-            <div id="color-picker" style="display: flex; gap: 8px;">
-                <div class="color-swatch active" style="background: black;" data-color="black"></div>
-                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></div>
-                <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6"></div>
-                <div class="color-swatch" style="background: #10b981;" data-color="#10b981"></div>
+            <!-- Row 1: Colors (scrollable) -->
+            <div class="toolbar-row color-row" id="color-picker">
+                <div class="color-swatch active" style="background: #1a1a1a;" data-color="#1a1a1a" title="Black"></div>
+                <div class="color-swatch" style="background: #ffffff; border-color: rgba(0,0,0,0.3);" data-color="#ffffff" title="White"></div>
+                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444" title="Red"></div>
+                <div class="color-swatch" style="background: #f97316;" data-color="#f97316" title="Orange"></div>
+                <div class="color-swatch" style="background: #eab308;" data-color="#eab308" title="Yellow"></div>
+                <div class="color-swatch" style="background: #22c55e;" data-color="#22c55e" title="Green"></div>
+                <div class="color-swatch" style="background: #06b6d4;" data-color="#06b6d4" title="Cyan"></div>
+                <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6" title="Blue"></div>
+                <div class="color-swatch" style="background: #8b5cf6;" data-color="#8b5cf6" title="Purple"></div>
+                <div class="color-swatch" style="background: #ec4899;" data-color="#ec4899" title="Pink"></div>
+                <div class="color-swatch" style="background: #92400e;" data-color="#92400e" title="Brown"></div>
+                <div class="color-swatch" style="background: #6b7280;" data-color="#6b7280" title="Gray"></div>
             </div>
-            
-            <button onclick="clearCanvas()" class="tool-btn">🗑️</button>
-            <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn">🧽</button>
-            
-            <div id="brush-size" style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 5px; height: 5px; background: white; border-radius: 50%;" onclick="setBrush(5)"></div>
-                <div style="width: 15px; height: 15px; background: white; border-radius: 50%;" onclick="setBrush(15)"></div>
+
+            <!-- Row 2: Brush sizes + Tools + Opacity -->
+            <div class="toolbar-row tools-row">
+                <!-- Brush Sizes -->
+                <div class="brush-group">
+                    <button class="brush-btn active" data-size="3" title="Fine"><span class="brush-dot" style="width:5px;height:5px;"></span></button>
+                    <button class="brush-btn" data-size="8" title="Small"><span class="brush-dot" style="width:10px;height:10px;"></span></button>
+                    <button class="brush-btn" data-size="15" title="Medium"><span class="brush-dot" style="width:16px;height:16px;"></span></button>
+                    <button class="brush-btn" data-size="25" title="Large"><span class="brush-dot" style="width:22px;height:22px;"></span></button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Action Tools -->
+                <div class="action-group">
+                    <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn" title="Eraser">🧽</button>
+                    <button onclick="undoLastStroke()" id="undo-btn" class="tool-btn" title="Undo" style="display:none;">↩️</button>
+                    <button onclick="clearCanvas()" class="tool-btn" title="Clear">🗑️</button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Opacity -->
+                <div class="opacity-group">
+                    <span id="opacity-label" class="opacity-label">100%</span>
+                    <input type="range" id="opacity-slider" min="0.1" max="1" step="0.1" value="1" class="opacity-slider">
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Voting Screen -->
     <div id="voting-screen" class="screen hidden">
-        <h2 style="margin-bottom: 2rem;">How do you rate it?</h2>
-        <div class="voting-grid">
-            <button class="vote-btn" onclick="sendVote(1)">1</button>
-            <button class="vote-btn" onclick="sendVote(2)">2</button>
-            <button class="vote-btn" onclick="sendVote(3)">3</button>
-            <button class="vote-btn" onclick="sendVote(4)">4</button>
-            <button class="vote-btn" onclick="sendVote(5)">5</button>
-            <button class="vote-btn" onclick="sendVote(6)">6</button>
+        <div class="glass" style="text-align: center; padding: 2rem;">
+            <h2 style="margin-bottom: 1.5rem; color: var(--accent-secondary);">⭐ Rate this doodle!</h2>
+            <div class="voting-grid">
+                <button class="vote-btn" onclick="sendVote(1)">1</button>
+                <button class="vote-btn" onclick="sendVote(2)">2</button>
+                <button class="vote-btn" onclick="sendVote(3)">3</button>
+                <button class="vote-btn" onclick="sendVote(4)">4</button>
+                <button class="vote-btn" onclick="sendVote(5)">5</button>
+                <button class="vote-btn" onclick="sendVote(6)">6</button>
+            </div>
         </div>
     </div>
 
     <!-- Waiting Screen -->
     <div id="waiting-screen" class="screen hidden">
-        <div class="glass" style="text-align: center;">
-            <div style="font-size: 3rem; animation: float 2s infinite ease-in-out;">⏳</div>
-            <h3>Waiting for Host...</h3>
+        <div class="glass" style="text-align: center; padding: 2.5rem;">
+            <div style="font-size: 3rem; animation: float 2s infinite ease-in-out;">🎨</div>
+            <h3 style="margin-top: 1rem;">Waiting for Host...</h3>
             <p id="waiting-message" style="color: var(--text-muted); margin-top: 10px;"></p>
         </div>
     </div>
