@@ -1,5 +1,6 @@
 /**
  * Client Logic for Doodle Party (Mobile Controller)
+ * Enhanced with undo, opacity, expanded colors/brushes, and aspect ratio data
  */
 
 let peer;
@@ -11,11 +12,17 @@ let lastX = 0;
 let lastY = 0;
 let currentColor = 'black';
 let brushSize = 5;
+let currentOpacity = 1.0;
 let isEraser = false;
+
+// Undo system — each "undo unit" is a full pen-down → pen-up gesture
+let strokeHistory = [];   // Array of arrays: each sub-array = one gesture
+let currentGesture = [];  // Strokes in the current pen-down
 
 function initClient() {
     doodleCanvas = new DoodleCanvas('mobile-canvas');
     setupDrawingEvents();
+    setupToolbar();
     
     // Check if room ID is in URL hash
     const roomId = window.location.hash.substring(1);
@@ -72,10 +79,38 @@ function handleHostData(data) {
             switchScreen('drawing-screen');
             doodleCanvas.clear();
             doodleCanvas.resize();
+            strokeHistory = [];
+            currentGesture = [];
+
+            // Show/hide undo based on mode
+            const undoBtn = document.getElementById('undo-btn');
+            if (undoBtn) {
+                undoBtn.style.display = (data.mode === 'battle') ? 'flex' : 'none';
+            }
             break;
 
         case 'BATTLE_INFO':
-            alert("BATTLE START! \nTheme: " + data.theme);
+            // Show theme in the status bar instead of alert
+            const statusMode = document.getElementById('current-mode');
+            statusMode.innerText = 'BATTLE';
+            const themeDisplay = document.getElementById('battle-theme-display');
+            if (themeDisplay) {
+                themeDisplay.innerText = data.theme;
+                themeDisplay.style.display = 'block';
+            }
+            const timerDisplay = document.getElementById('mobile-timer');
+            if (timerDisplay) {
+                let timeLeft = data.time;
+                timerDisplay.innerText = formatTime(timeLeft);
+                timerDisplay.style.display = 'block';
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.innerText = formatTime(timeLeft);
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                    }
+                }, 1000);
+            }
             break;
 
         case 'TIME_UP':
@@ -98,11 +133,17 @@ function handleHostData(data) {
     }
 }
 
+function getCanvasAspectRatio() {
+    const canvas = document.getElementById('mobile-canvas');
+    return canvas.height / canvas.width;
+}
+
 function setupDrawingEvents() {
     const canvas = document.getElementById('mobile-canvas');
 
     const start = (e) => {
         isDrawing = true;
+        currentGesture = [];
         const pos = getPos(e);
         lastX = pos.x / canvas.width;
         lastY = pos.y / canvas.height;
@@ -120,11 +161,18 @@ function setupDrawingEvents() {
             x2: currX,
             y2: currY,
             color: isEraser ? 'white' : currentColor,
-            size: brushSize
+            size: brushSize,
+            opacity: isEraser ? 1.0 : currentOpacity,
+            aspectRatio: getCanvasAspectRatio()
         };
 
         // Draw locally
         doodleCanvas.drawStroke(stroke);
+
+        // Save for undo (battle mode)
+        if (currentMode === 'battle') {
+            currentGesture.push(stroke);
+        }
 
         // Send to host if in freeplay
         if (currentMode === 'freeplay' && conn && conn.open) {
@@ -136,14 +184,20 @@ function setupDrawingEvents() {
         e.preventDefault();
     };
 
-    const stop = () => { isDrawing = false; };
+    const stop = () => {
+        if (isDrawing && currentGesture.length > 0) {
+            strokeHistory.push([...currentGesture]);
+            currentGesture = [];
+        }
+        isDrawing = false;
+    };
 
     canvas.addEventListener('mousedown', start);
     canvas.addEventListener('mousemove', move);
     window.addEventListener('mouseup', stop);
 
-    canvas.addEventListener('touchstart', start);
-    canvas.addEventListener('touchmove', move);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
     window.addEventListener('touchend', stop);
 }
 
@@ -158,9 +212,45 @@ function getPos(e) {
     };
 }
 
-// Tool functions
+// ============== Tool functions ==============
+
+function setupToolbar() {
+    // Color picker logic
+    document.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            swatch.classList.add('active');
+            currentColor = swatch.dataset.color;
+            isEraser = false;
+            document.getElementById('eraser-btn').classList.remove('active');
+        });
+    });
+
+    // Brush size buttons
+    document.querySelectorAll('.brush-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            brushSize = parseInt(btn.dataset.size);
+        });
+    });
+
+    // Opacity slider
+    const opacitySlider = document.getElementById('opacity-slider');
+    if (opacitySlider) {
+        opacitySlider.addEventListener('input', (e) => {
+            currentOpacity = parseFloat(e.target.value);
+            const label = document.getElementById('opacity-label');
+            if (label) label.innerText = Math.round(currentOpacity * 100) + '%';
+        });
+    }
+}
+
 function setBrush(size) {
     brushSize = size;
+    document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+    const target = document.querySelector(`.brush-btn[data-size="${size}"]`);
+    if (target) target.classList.add('active');
 }
 
 function toggleEraser() {
@@ -170,6 +260,20 @@ function toggleEraser() {
 
 function clearCanvas() {
     doodleCanvas.clear();
+    strokeHistory = [];
+    currentGesture = [];
+}
+
+function undoLastStroke() {
+    if (strokeHistory.length === 0) return;
+    strokeHistory.pop();
+    // Replay all remaining strokes
+    doodleCanvas.clear();
+    for (const gesture of strokeHistory) {
+        for (const stroke of gesture) {
+            doodleCanvas.drawStroke(stroke);
+        }
+    }
 }
 
 function sendVote(val) {
@@ -185,15 +289,10 @@ function switchScreen(id) {
     document.getElementById(id).classList.remove('hidden');
 }
 
-// Color picker logic
-document.querySelectorAll('.color-swatch').forEach(swatch => {
-    swatch.addEventListener('click', () => {
-        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-        swatch.classList.add('active');
-        currentColor = swatch.dataset.color;
-        isEraser = false;
-        document.getElementById('eraser-btn').classList.remove('active');
-    });
-});
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
 window.onload = initClient;

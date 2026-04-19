@@ -9,6 +9,7 @@ let votes = {};
 let currentMode = 'lobby';
 let doodleCanvas;
 let battleTimer;
+let lastKnownAspectRatio = null;
 
 // Predefined Themes for Battle Mode
 const themes = [
@@ -21,7 +22,12 @@ const themes = [
     "Dinosaur's first day at school",
     "A very rich potato",
     "Alien tourist at a beach",
-    "Surprised cloud"
+    "Surprised cloud",
+    "Robot learning to dance",
+    "A penguin in a business meeting",
+    "Spaghetti tornado",
+    "Time-traveling snail",
+    "Whale in space"
 ];
 
 function initHost() {
@@ -38,6 +44,12 @@ function initHost() {
 
     peer.on('open', (id) => {
         console.log('Room opened with ID:', id);
+        // Mark status as connected
+        const statusEl = document.getElementById('connection-status');
+        if (statusEl) {
+            statusEl.innerText = '🟢 Connected';
+            statusEl.style.color = 'var(--success)';
+        }
     });
 
     peer.on('connection', (conn) => {
@@ -46,7 +58,11 @@ function initHost() {
 
     peer.on('error', (err) => {
         console.error('Peer error:', err);
-        alert('Failed to connect to PeerServer. Please refresh.');
+        const statusEl = document.getElementById('connection-status');
+        if (statusEl) {
+            statusEl.innerText = '🔴 Connection Error';
+            statusEl.style.color = 'var(--danger)';
+        }
     });
 }
 
@@ -72,8 +88,8 @@ function generateQRCode(roomId) {
     const linkEl = document.createElement('a');
     linkEl.href = url;
     linkEl.target = '_blank';
-    linkEl.textContent = 'Open join link';
-    linkEl.style.cssText = 'display:block; margin-top:0.5rem; color:#8b5cf6; font-size:0.85rem; text-decoration:underline;';
+    linkEl.textContent = 'Open join link ↗';
+    linkEl.style.cssText = 'display:block; margin-top:0.75rem; color:var(--accent-primary); font-size:0.85rem; text-decoration:underline;';
     qrContainer.parentElement.insertBefore(linkEl, qrContainer.nextSibling);
 
     console.log("Join Link:", url);
@@ -110,6 +126,10 @@ function handleClientData(conn, data) {
 
         case 'DRAW':
             if (currentMode === 'freeplay') {
+                // Track aspect ratio from the first stroke for guide drawing
+                if (data.stroke.aspectRatio && !lastKnownAspectRatio) {
+                    lastKnownAspectRatio = data.stroke.aspectRatio;
+                }
                 doodleCanvas.drawStroke(data.stroke);
             }
             break;
@@ -130,12 +150,21 @@ function handleClientData(conn, data) {
 
 function updatePlayerCount() {
     const count = Object.keys(players).length;
-    document.getElementById('player-count').innerText = `Ready to Party! (${count} players)`;
+    const names = Object.values(players).map(p => p.name);
+    
+    const playerCountEl = document.getElementById('player-count');
+    if (count === 0) {
+        playerCountEl.innerHTML = `<span style="color: var(--text-muted);">Waiting for players... (0)</span>`;
+    } else {
+        playerCountEl.innerHTML = `<span style="color: var(--success);">🎮 ${count} player${count > 1 ? 's' : ''} ready!</span><br><small style="color: var(--text-muted);">${names.join(', ')}</small>`;
+    }
+    
     document.getElementById('active-players').innerText = `Players: ${count}`;
 }
 
 function startGame(mode) {
     currentMode = mode;
+    lastKnownAspectRatio = null;
     document.getElementById('lobby-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     
@@ -156,7 +185,7 @@ function startBattleMode() {
     doodleCanvas.clear();
     
     const theme = themes[Math.floor(Math.random() * themes.length)];
-    document.getElementById('battle-theme').innerText = `Theme: ${theme}`;
+    document.getElementById('battle-theme').innerText = `🎨 Theme: ${theme}`;
     document.getElementById('battle-header').classList.remove('hidden');
     
     const selectedTime = parseInt(document.getElementById('battle-time-select').value) || 180;
@@ -168,6 +197,16 @@ function startBattleMode() {
     battleTimer = setInterval(() => {
         timeLeft--;
         document.getElementById('game-timer').innerText = formatTime(timeLeft);
+        
+        // Color warning when time is low
+        const timerEl = document.getElementById('game-timer');
+        if (timeLeft <= 30) {
+            timerEl.style.color = 'var(--danger)';
+            timerEl.style.animation = 'pulse 0.5s infinite';
+        } else if (timeLeft <= 60) {
+            timerEl.style.color = '#f59e0b';
+        }
+        
         if (timeLeft <= 0) {
             clearInterval(battleTimer);
             broadcast({ type: 'TIME_UP' });
@@ -197,19 +236,19 @@ async function startRevealProcess() {
         
         document.getElementById('reveal-image').src = doodle.image;
         document.getElementById('reveal-title').innerText = `Doodle by: ???`;
+        document.getElementById('reveal-counter').innerText = `${i + 1} / ${doodles.length}`;
         
         broadcast({ type: 'START_VOTING' });
         updateVotingStatus();
 
-        // Wait for all votes or 15 seconds
+        // Wait for all votes or timeout
         await waitForVotes();
         
         // Calculate and save score
         const totalScore = Object.values(votes).reduce((a, b) => a + b, 0);
-        const avgScore = totalScore / (Object.keys(players).length || 1);
         players[doodle.playerId].score += totalScore;
 
-        document.getElementById('reveal-title').innerText = `Doodle by: ${doodle.name} (Score: ${totalScore})`;
+        document.getElementById('reveal-title').innerText = `🎨 ${doodle.name} — Score: ${totalScore}`;
         await new Promise(r => setTimeout(r, 3000)); // Show name for 3 seconds
     }
 
@@ -221,7 +260,7 @@ function waitForVotes() {
         const check = setInterval(() => {
             const voteCount = Object.keys(votes).length;
             const playerCount = Object.keys(players).length;
-            if (voteCount >= playerCount && playerCount > 0) { // Everyone voted
+            if (voteCount >= playerCount && playerCount > 0) {
                 clearInterval(check);
                 resolve();
             }
@@ -243,13 +282,23 @@ function showFinalResults() {
     document.getElementById('winner-screen').classList.remove('hidden');
     
     const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
-    const winner = sortedPlayers[0];
-
-    document.getElementById('winner-display').innerHTML = `
-        <h2 style="font-size: 3rem; margin-bottom: 1rem;">${winner ? winner.name : 'No one'}</h2>
-        <p style="font-size: 1.5rem;">With a total of ${winner ? winner.score : 0} points!</p>
-    `;
     
+    let leaderboardHTML = '';
+    sortedPlayers.forEach((p, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+        const isWinner = i === 0;
+        leaderboardHTML += `
+            <div class="leaderboard-row ${isWinner ? 'winner-row' : ''}" style="animation-delay: ${i * 0.2}s;">
+                <span class="medal">${medal}</span>
+                <span class="player-name">${p.name}</span>
+                <span class="player-score">${p.score} pts</span>
+            </div>
+        `;
+    });
+
+    document.getElementById('winner-display').innerHTML = leaderboardHTML;
+    
+    const winner = sortedPlayers[0];
     broadcast({ type: 'GAME_OVER', winner: winner ? winner.name : 'No one', score: winner ? winner.score : 0 });
 }
 
