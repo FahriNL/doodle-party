@@ -11,10 +11,10 @@
     <!-- Join Screen -->
     <div id="join-screen" class="screen">
         <h1 class="logo-font">Doodle Party</h1>
-        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Enter your name and join!</p>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Masukkan nama Anda dan bergabung!</p>
         <div class="glass" style="width: 85%; max-width: 400px;">
-            <input type="text" id="player-name" placeholder="Your Name" class="input-field" maxlength="16">
-            <button onclick="joinGame()" class="btn-primary" id="join-btn">🎨 Join Game</button>
+            <input type="text" id="player-name" placeholder="Nama Anda" class="input-field" maxlength="16">
+            <button onclick="joinGame()" class="btn-primary" id="join-btn">🎨 Gabung Game</button>
         </div>
     </div>
 
@@ -22,7 +22,7 @@
     <div id="drawing-screen" class="screen hidden">
         <!-- Status Bar: mode + theme + timer -->
         <div id="status-bar" class="status-bar">
-            <span id="current-mode" class="mode-badge">FREEPLAY</span>
+            <span id="current-mode" class="mode-badge">MAIN BEBAS</span>
             <span id="battle-theme-display" class="theme-text" style="display:none;"></span>
             <span id="mobile-timer" class="timer-text" style="display:none;"></span>
         </div>
@@ -32,41 +32,50 @@
             <canvas id="mobile-canvas"></canvas>
         </div>
 
-        <!-- Toolbar — ergonomic two-row layout -->
+        <!-- Toolbar — ergonomic layout -->
         <div class="toolbar">
-            <!-- Row 1: Colors (scrollable) -->
-            <div class="toolbar-row color-row" id="color-picker">
-                <div class="color-swatch active" style="background: #1a1a1a;" data-color="#1a1a1a" title="Black"></div>
-                <div class="color-swatch" style="background: #ffffff; border-color: rgba(0,0,0,0.3);" data-color="#ffffff" title="White"></div>
-                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444" title="Red"></div>
-                <div class="color-swatch" style="background: #f97316;" data-color="#f97316" title="Orange"></div>
-                <div class="color-swatch" style="background: #eab308;" data-color="#eab308" title="Yellow"></div>
-                <div class="color-swatch" style="background: #22c55e;" data-color="#22c55e" title="Green"></div>
-                <div class="color-swatch" style="background: #06b6d4;" data-color="#06b6d4" title="Cyan"></div>
-                <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6" title="Blue"></div>
-                <div class="color-swatch" style="background: #8b5cf6;" data-color="#8b5cf6" title="Purple"></div>
-                <div class="color-swatch" style="background: #ec4899;" data-color="#ec4899" title="Pink"></div>
-                <div class="color-swatch" style="background: #92400e;" data-color="#92400e" title="Brown"></div>
-                <div class="color-swatch" style="background: #6b7280;" data-color="#6b7280" title="Gray"></div>
+            <!-- Row 1: Brush Types -->
+            <div class="toolbar-row brush-type-row" id="brush-type-picker">
+                <button class="brush-type-btn active" data-type="marker" title="Spidol">🖊️</button>
+                <button class="brush-type-btn" data-type="pencil" title="Pensil">✏️</button>
+                <button class="brush-type-btn" data-type="calligraphy" title="Kaligrafi">✒️</button>
+                <button class="brush-type-btn" data-type="spray" title="Semprot">💨</button>
+                <button class="brush-type-btn" data-type="charcoal" title="Arang">🌑</button>
             </div>
 
-            <!-- Row 2: Brush sizes + Tools + Opacity -->
+            <!-- Row 2: Colors (scrollable) -->
+            <div class="toolbar-row color-row" id="color-picker">
+                <div class="color-swatch active" style="background: #1a1a1a;" data-color="#1a1a1a" title="Hitam"></div>
+                <div class="color-swatch" style="background: #ffffff; border-color: rgba(0,0,0,0.3);" data-color="#ffffff" title="Putih"></div>
+                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444" title="Merah"></div>
+                <div class="color-swatch" style="background: #f97316;" data-color="#f97316" title="Oranye"></div>
+                <div class="color-swatch" style="background: #eab308;" data-color="#eab308" title="Kuning"></div>
+                <div class="color-swatch" style="background: #22c55e;" data-color="#22c55e" title="Hijau"></div>
+                <div class="color-swatch" style="background: #06b6d4;" data-color="#06b6d4" title="Sian"></div>
+                <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6" title="Biru"></div>
+                <div class="color-swatch" style="background: #8b5cf6;" data-color="#8b5cf6" title="Ungu"></div>
+                <div class="color-swatch" style="background: #ec4899;" data-color="#ec4899" title="Merah Muda"></div>
+                <div class="color-swatch" style="background: #92400e;" data-color="#92400e" title="Cokelat"></div>
+                <div class="color-swatch" style="background: #6b7280;" data-color="#6b7280" title="Abu-abu"></div>
+            </div>
+
+            <!-- Row 3: Brush sizes + Tools + Opacity -->
             <div class="toolbar-row tools-row">
                 <!-- Brush Sizes -->
                 <div class="brush-group">
-                    <button class="brush-btn active" data-size="3" title="Fine"><span class="brush-dot" style="width:5px;height:5px;"></span></button>
-                    <button class="brush-btn" data-size="8" title="Small"><span class="brush-dot" style="width:10px;height:10px;"></span></button>
-                    <button class="brush-btn" data-size="15" title="Medium"><span class="brush-dot" style="width:16px;height:16px;"></span></button>
-                    <button class="brush-btn" data-size="25" title="Large"><span class="brush-dot" style="width:22px;height:22px;"></span></button>
+                    <button class="brush-btn active" data-size="3" title="Sangat Kecil"><span class="brush-dot" style="width:5px;height:5px;"></span></button>
+                    <button class="brush-btn" data-size="8" title="Kecil"><span class="brush-dot" style="width:10px;height:10px;"></span></button>
+                    <button class="brush-btn" data-size="15" title="Sedang"><span class="brush-dot" style="width:16px;height:16px;"></span></button>
+                    <button class="brush-btn" data-size="25" title="Besar"><span class="brush-dot" style="width:22px;height:22px;"></span></button>
                 </div>
 
                 <div class="tool-divider"></div>
 
                 <!-- Action Tools -->
                 <div class="action-group">
-                    <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn" title="Eraser">🧽</button>
-                    <button onclick="undoLastStroke()" id="undo-btn" class="tool-btn" title="Undo" style="display:none;">↩️</button>
-                    <button onclick="clearCanvas()" class="tool-btn" title="Clear">🗑️</button>
+                    <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn" title="Penghapus">🧽</button>
+                    <button onclick="undoLastStroke()" id="undo-btn" class="tool-btn" title="Urungkan" style="display:none;">↩️</button>
+                    <button onclick="clearCanvas()" class="tool-btn" title="Bersihkan">🗑️</button>
                 </div>
 
                 <div class="tool-divider"></div>
@@ -83,7 +92,7 @@
     <!-- Voting Screen -->
     <div id="voting-screen" class="screen hidden">
         <div class="glass" style="text-align: center; padding: 2rem;">
-            <h2 style="margin-bottom: 1.5rem; color: var(--accent-secondary);">⭐ Rate this doodle!</h2>
+            <h2 style="margin-bottom: 1.5rem; color: var(--accent-secondary);">⭐ Nilai gambar ini!</h2>
             <div class="voting-grid">
                 <button class="vote-btn" onclick="sendVote(1)">1</button>
                 <button class="vote-btn" onclick="sendVote(2)">2</button>
@@ -99,7 +108,7 @@
     <div id="waiting-screen" class="screen hidden">
         <div class="glass" style="text-align: center; padding: 2.5rem;">
             <div style="font-size: 3rem; animation: float 2s infinite ease-in-out;">🎨</div>
-            <h3 style="margin-top: 1rem;">Waiting for Host...</h3>
+            <h3 style="margin-top: 1rem;">Menunggu Host...</h3>
             <p id="waiting-message" style="color: var(--text-muted); margin-top: 10px;"></p>
         </div>
     </div>

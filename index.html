@@ -18,31 +18,31 @@
     <!-- Lobby Screen -->
     <div id="lobby-screen" class="screen">
         <h1 class="logo-font" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Doodle Party</h1>
-        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">Your phone is the brush. This screen is the canvas.</p>
+        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">HP Anda adalah kuas. Layar ini adalah kanvas.</p>
         
         <div class="glass lobby-info">
-            <p style="font-size: 1.1rem; font-weight: 600;">📱 Scan to join the fun!</p>
+            <p style="font-size: 1.1rem; font-weight: 600;">📱 Pindai untuk bergabung!</p>
             <div id="qrcode" class="qr-container"></div>
             <p id="room-code" class="room-code"></p>
-            <p id="connection-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">⏳ Connecting...</p>
+            <p id="connection-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">⏳ Menghubungkan...</p>
             
             <div id="player-count" style="margin-top: 1rem; font-size: 1rem;">
-                <span style="color: var(--text-muted);">Waiting for players... (0)</span>
+                <span style="color: var(--text-muted);">Menunggu pemain... (0)</span>
             </div>
 
             <div class="lobby-controls">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <label style="font-size: 0.9rem;">⏱ Battle Time:</label>
+                    <label style="font-size: 0.9rem;">⏱ Waktu Pertarungan:</label>
                     <select id="battle-time-select" class="select-field">
-                        <option value="180">3 Minutes</option>
-                        <option value="240">4 Minutes</option>
-                        <option value="300">5 Minutes</option>
-                        <option value="360" selected>6 Minutes</option>
+                        <option value="180">3 Menit</option>
+                        <option value="240">4 Menit</option>
+                        <option value="300">5 Menit</option>
+                        <option value="360" selected>6 Menit</option>
                     </select>
                 </div>
                 <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
-                    <button onclick="startGame('freeplay')" class="btn-mode btn-freeplay" id="btn-freeplay">🎨 Freeplay Mode</button>
-                    <button onclick="startGame('battle')" class="btn-mode btn-battle" id="btn-battle">⚔️ Battle Mode</button>
+                    <button onclick="startGame('freeplay')" class="btn-mode btn-freeplay" id="btn-freeplay">🎨 Main Bebas</button>
+                    <button onclick="startGame('battle')" class="btn-mode btn-battle" id="btn-battle">⚔️ Mode Pertarungan</button>
                 </div>
             </div>
         </div>
@@ -51,12 +51,12 @@
     <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
         <div class="players-badge glass">
-            <div id="active-players">Players: 0</div>
+            <div id="active-players">Pemain: 0</div>
             <div id="game-timer" class="game-timer"></div>
         </div>
         
         <div id="battle-header" class="battle-header hidden">
-            <h2 id="battle-theme" class="battle-theme-text">🎨 Theme: Loading...</h2>
+            <h2 id="battle-theme" class="battle-theme-text">🎨 Tema: Memuat...</h2>
         </div>
 
         <div id="host-canvas-container">
@@ -66,23 +66,23 @@
 
     <!-- Reveal Screen -->
     <div id="reveal-screen" class="screen hidden">
-        <h2 id="reveal-title" class="reveal-title">Who drew this?</h2>
+        <h2 id="reveal-title" class="reveal-title">Siapa yang menggambar ini?</h2>
         <small id="reveal-counter" style="color: var(--text-muted); margin-bottom: 1rem;">1 / 1</small>
         <div id="reveal-container">
             <img id="reveal-image" src="" alt="Doodle">
         </div>
         <div id="voting-status" class="glass" style="margin-top: 2rem; font-size: 1.1rem;">
-            Waiting for votes... (0/0)
+            Menunggu suara... (0/0)
         </div>
     </div>
 
     <!-- Winner Screen -->
     <div id="winner-screen" class="screen hidden">
-        <h1 class="winner-title">🏆 Final Results</h1>
+        <h1 class="winner-title">🏆 Hasil Akhir</h1>
         <div id="winner-display" class="glass leaderboard">
             <!-- Leaderboard rows injected here -->
         </div>
-        <button onclick="location.reload()" class="btn-primary" style="margin-top: 2rem;">🔄 Play Again</button>
+        <button onclick="location.reload()" class="btn-primary" style="margin-top: 2rem;">🔄 Main Lagi</button>
     </div>
 
     <script src="js/drawing.js"></script>
