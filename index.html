@@ -21,10 +21,16 @@
         <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">HP Anda adalah kuas. Layar ini adalah kanvas.</p>
         
         <div class="glass lobby-info">
-            <p style="font-size: 1.1rem; font-weight: 600;">📱 Pindai untuk bergabung!</p>
+            <p style="font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                Pindai untuk bergabung!
+            </p>
             <div id="qrcode" class="qr-container"></div>
             <p id="room-code" class="room-code"></p>
-            <p id="connection-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">⏳ Menghubungkan...</p>
+            <p id="connection-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <svg id="status-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="status-text">Menghubungkan...</span>
+            </p>
             
             <div id="player-count" style="margin-top: 1rem; font-size: 1rem;">
                 <span style="color: var(--text-muted);">Menunggu pemain... (0)</span>
@@ -32,7 +38,10 @@
 
             <div class="lobby-controls">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <label style="font-size: 0.9rem;">⏱ Waktu Pertarungan:</label>
+                    <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Waktu Pertarungan:
+                    </label>
                     <select id="battle-time-select" class="select-field">
                         <option value="180">3 Menit</option>
                         <option value="240">4 Menit</option>
@@ -41,8 +50,14 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
-                    <button onclick="startGame('freeplay')" class="btn-mode btn-freeplay" id="btn-freeplay">🎨 Main Bebas</button>
-                    <button onclick="startGame('battle')" class="btn-mode btn-battle" id="btn-battle">⚔️ Mode Pertarungan</button>
+                    <button onclick="startGame('freeplay')" class="btn-mode btn-freeplay" id="btn-freeplay" style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                        Main Bebas
+                    </button>
+                    <button onclick="startGame('battle')" class="btn-mode btn-battle" id="btn-battle" style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        Mode Pertarungan
+                    </button>
                 </div>
             </div>
         </div>
@@ -50,13 +65,23 @@
 
     <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
-        <div class="players-badge glass">
-            <div id="active-players">Pemain: 0</div>
-            <div id="game-timer" class="game-timer"></div>
+        <div class="players-badge glass" style="display: flex; align-items: center; gap: 15px;">
+            <div id="active-players" style="display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Pemain: 0</span>
+            </div>
+            <div id="game-timer" class="game-timer" style="display: none;"></div>
+            <button id="btn-reset-canvas" onclick="resetCanvasHost()" class="btn-primary" style="display: none; padding: 5px 10px; font-size: 0.9rem; align-items: center; gap: 6px; border-radius: 6px; background-color: var(--danger); box-shadow: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Reset Kanvas
+            </button>
         </div>
         
         <div id="battle-header" class="battle-header hidden">
-            <h2 id="battle-theme" class="battle-theme-text">🎨 Tema: Memuat...</h2>
+            <h2 id="battle-theme" class="battle-theme-text" style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                <span id="battle-theme-name">Tema: Memuat...</span>
+            </h2>
         </div>
 
         <div id="host-canvas-container">
@@ -78,11 +103,17 @@
 
     <!-- Winner Screen -->
     <div id="winner-screen" class="screen hidden">
-        <h1 class="winner-title">🏆 Hasil Akhir</h1>
+        <h1 class="winner-title" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+            Hasil Akhir
+        </h1>
         <div id="winner-display" class="glass leaderboard">
             <!-- Leaderboard rows injected here -->
         </div>
-        <button onclick="location.reload()" class="btn-primary" style="margin-top: 2rem;">🔄 Main Lagi</button>
+        <button onclick="location.reload()" class="btn-primary" style="margin-top: 2rem; display: flex; align-items: center; justify-content: center; gap: 8px; margin-left: auto; margin-right: auto;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10"></path><path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14"></path></svg>
+            Main Lagi
+        </button>
     </div>
 
     <script src="js/drawing.js"></script>
