@@ -91,6 +91,17 @@
         <div id="host-canvas-container">
             <canvas id="host-canvas"></canvas>
         </div>
+
+        <div id="battle-progress-container" class="hidden" style="width: 90vw; height: 85vh; background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); animation: fadeInScale 0.6s ease;">
+            <div style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(236,72,153,0.5));"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                <div id="massive-timer" style="font-size: 8rem; font-weight: 800; color: var(--accent-secondary); text-shadow: 0 0 40px rgba(236,72,153,0.4); line-height: 1;">00:00</div>
+                <h3 style="font-size: 2.5rem; color: var(--text-main); margin-top: 10px;">Berikan yang terbaik!</h3>
+                <p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 15px;">Pemain sedang sibuk menyelesaikan mahakarya mereka...</p>
+            </div>
+            <div id="battle-players-status" style="margin-top: 50px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 80%;">
+            </div>
+        </div>
     </div>
 
     <!-- Reveal Screen -->
