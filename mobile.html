@@ -14,7 +14,10 @@
         <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Masukkan nama Anda dan bergabung!</p>
         <div class="glass" style="width: 85%; max-width: 400px;">
             <input type="text" id="player-name" placeholder="Nama Anda" class="input-field" maxlength="16">
-            <button onclick="joinGame()" class="btn-primary" id="join-btn">🎨 Gabung Game</button>
+            <button onclick="joinGame()" class="btn-primary" id="join-btn" style="display:flex; align-items:center; justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                Gabung Game
+            </button>
         </div>
     </div>
 
@@ -36,11 +39,21 @@
         <div class="toolbar">
             <!-- Row 1: Brush Types -->
             <div class="toolbar-row brush-type-row" id="brush-type-picker">
-                <button class="brush-type-btn active" data-type="marker" title="Spidol">🖊️</button>
-                <button class="brush-type-btn" data-type="pencil" title="Pensil">✏️</button>
-                <button class="brush-type-btn" data-type="calligraphy" title="Kaligrafi">✒️</button>
-                <button class="brush-type-btn" data-type="spray" title="Semprot">💨</button>
-                <button class="brush-type-btn" data-type="charcoal" title="Arang">🌑</button>
+                <button class="brush-type-btn active" data-type="marker" title="Spidol">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                </button>
+                <button class="brush-type-btn" data-type="pencil" title="Pensil">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
+                <button class="brush-type-btn" data-type="calligraphy" title="Kaligrafi">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                </button>
+                <button class="brush-type-btn" data-type="spray" title="Semprot">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>
+                </button>
+                <button class="brush-type-btn" data-type="charcoal" title="Arang">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
             </div>
 
             <!-- Row 2: Colors (scrollable) -->
@@ -73,9 +86,15 @@
 
                 <!-- Action Tools -->
                 <div class="action-group">
-                    <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn" title="Penghapus">🧽</button>
-                    <button onclick="undoLastStroke()" id="undo-btn" class="tool-btn" title="Urungkan" style="display:none;">↩️</button>
-                    <button onclick="clearCanvas()" class="tool-btn" title="Bersihkan">🗑️</button>
+                    <button onclick="toggleEraser()" id="eraser-btn" class="tool-btn" title="Penghapus" style="display:flex; align-items:center; justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path></svg>
+                    </button>
+                    <button onclick="undoLastStroke()" id="undo-btn" class="tool-btn" title="Urungkan" style="display:none; align-items:center; justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+                    </button>
+                    <button onclick="clearCanvas()" class="tool-btn" title="Bersihkan" style="display:flex; align-items:center; justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
                 </div>
 
                 <div class="tool-divider"></div>
@@ -92,7 +111,10 @@
     <!-- Voting Screen -->
     <div id="voting-screen" class="screen hidden">
         <div class="glass" style="text-align: center; padding: 2rem;">
-            <h2 style="margin-bottom: 1.5rem; color: var(--accent-secondary);">⭐ Nilai gambar ini!</h2>
+            <h2 style="margin-bottom: 1.5rem; color: var(--accent-secondary); display:flex; align-items:center; justify-content:center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Nilai gambar ini!
+            </h2>
             <div class="voting-grid">
                 <button class="vote-btn" onclick="sendVote(1)">1</button>
                 <button class="vote-btn" onclick="sendVote(2)">2</button>
@@ -107,7 +129,9 @@
     <!-- Waiting Screen -->
     <div id="waiting-screen" class="screen hidden">
         <div class="glass" style="text-align: center; padding: 2.5rem;">
-            <div style="font-size: 3rem; animation: float 2s infinite ease-in-out;">🎨</div>
+            <div style="animation: float 2s infinite ease-in-out; display:flex; justify-content:center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+            </div>
             <h3 style="margin-top: 1rem;">Menunggu Host...</h3>
             <p id="waiting-message" style="color: var(--text-muted); margin-top: 10px;"></p>
         </div>
