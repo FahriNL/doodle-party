@@ -142,6 +142,7 @@ function handleClientData(conn, data) {
         case 'SUBMIT_DOODLE':
             if (currentMode === 'battle') {
                 doodles.push({ playerId: conn.peer, name: players[conn.peer].name, image: data.image });
+                updateBattlePlayerStatus();
                 checkAllDoodlesSubmitted();
             }
             break;
@@ -188,11 +189,17 @@ function startGame(mode) {
     if (mode === 'freeplay') {
         doodleCanvas.clear();
         document.getElementById('battle-header').classList.add('hidden');
+        document.getElementById('host-canvas-container').classList.remove('hidden');
+        const progressContainer = document.getElementById('battle-progress-container');
+        if (progressContainer) progressContainer.classList.add('hidden');
         if (btnResetCanvas) btnResetCanvas.style.display = 'flex';
         if (gameTimer) gameTimer.style.display = 'none';
     } else if (mode === 'battle') {
         if (btnResetCanvas) btnResetCanvas.style.display = 'none';
         if (gameTimer) gameTimer.style.display = 'block';
+        document.getElementById('host-canvas-container').classList.add('hidden');
+        const progressContainer = document.getElementById('battle-progress-container');
+        if (progressContainer) progressContainer.classList.remove('hidden');
         startBattleMode();
     }
 }
@@ -204,6 +211,27 @@ function resetCanvasHost() {
     }
 }
 
+function updateBattlePlayerStatus() {
+    const battlePlayersStatus = document.getElementById('battle-players-status');
+    if (!battlePlayersStatus) return;
+    
+    let statusHtml = '';
+    for (const pid in players) {
+        const hasSubmitted = doodles.some(d => d.playerId === pid);
+        const icon = hasSubmitted ? 
+            `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : 
+            `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="spin" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l-3.28 3.28M3 12a9 9 0 1 0 18 0"></path></svg>`;
+            
+        statusHtml += `
+            <div style="background: ${hasSubmitted ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)'}; color: ${hasSubmitted ? 'var(--success)' : 'var(--text-muted)'}; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; border: 1px solid ${hasSubmitted ? 'var(--success)' : 'var(--glass-border)'}; transition: all 0.3s; opacity: ${hasSubmitted ? '1' : '0.6'};">
+                ${icon}
+                <span style="font-weight: ${hasSubmitted ? '700' : '500'}; font-size: 1.1rem;">${players[pid].name}</span>
+            </div>
+        `;
+    }
+    battlePlayersStatus.innerHTML = statusHtml;
+}
+
 function startBattleMode() {
     doodles = [];
     votes = {};
@@ -213,27 +241,36 @@ function startBattleMode() {
     document.getElementById('battle-theme-name').innerText = `Tema: ${theme}`;
     document.getElementById('battle-header').classList.remove('hidden');
     
-    const selectedTime = parseInt(document.getElementById('battle-time-select').value) || 180;
-    broadcast({ type: 'BATTLE_INFO', theme: theme, time: selectedTime });
-
-    let timeLeft = selectedTime;
-    document.getElementById('game-timer').innerText = formatTime(timeLeft);
+    // Broadcast to start battle
+    let seconds = 60; // 60 seconds battle
+    broadcast({ type: 'BATTLE_INFO', theme: theme, time: seconds });
     
+    updateBattlePlayerStatus();
+    
+    // Start Timer
+    if (battleTimer) clearInterval(battleTimer);
+    const timerDisplay = document.getElementById('game-timer');
+    const massiveTimer = document.getElementById('massive-timer');
+    
+    timerDisplay.innerText = formatTime(seconds);
+    if (massiveTimer) massiveTimer.innerText = formatTime(seconds);
+    timerDisplay.style.color = 'var(--text-main)';
+    if (massiveTimer) massiveTimer.style.color = 'var(--accent-secondary)';
+
     battleTimer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('game-timer').innerText = formatTime(timeLeft);
+        seconds--;
+        const timeStr = formatTime(seconds);
+        timerDisplay.innerText = timeStr;
+        if (massiveTimer) massiveTimer.innerText = timeStr;
         
-        // Color warning when time is low
-        const timerEl = document.getElementById('game-timer');
-        if (timeLeft <= 30) {
-            timerEl.style.color = 'var(--danger)';
-            timerEl.style.animation = 'pulse 0.5s infinite';
-        } else if (timeLeft <= 60) {
-            timerEl.style.color = '#f59e0b';
+        if (seconds <= 10) {
+            timerDisplay.style.color = 'var(--danger)';
+            if (massiveTimer) massiveTimer.style.color = 'var(--danger)';
         }
         
-        if (timeLeft <= 0) {
+        if (seconds <= 0) {
             clearInterval(battleTimer);
+            updateBattlePlayerStatus(); // force final status update
             broadcast({ type: 'TIME_UP' });
         }
     }, 1000);
