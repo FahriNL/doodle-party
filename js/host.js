@@ -10,6 +10,7 @@ let currentMode = 'lobby';
 let doodleCanvas;
 let battleTimer;
 let lastKnownAspectRatio = null;
+let globalGestures = [];
 
 // Predefined Themes for Battle Mode
 // Predefined Themes for Battle Mode in Indonesian
@@ -135,9 +136,57 @@ function handleClientData(conn, data) {
             }
             doodleCanvas.drawStroke(data.stroke);
             
+            // Save to global tracking for UNDO logic
+            if (data.gestureId) {
+                let gestureFound = false;
+                for (let i = globalGestures.length - 1; i >= 0; i--) {
+                    if (globalGestures[i].gestureId === data.gestureId) {
+                        globalGestures[i].strokes.push(data.stroke);
+                        gestureFound = true;
+                        break;
+                    }
+                }
+                if (!gestureFound) {
+                    globalGestures.push({
+                        playerId: conn.peer,
+                        gestureId: data.gestureId,
+                        strokes: [data.stroke]
+                    });
+                }
+            }
+            
             // Shared mobile progress (Freeplay only)
             if (currentMode === 'freeplay') {
                 broadcast(data);
+            }
+            break;
+
+        case 'UNDO':
+            if (data.gestureId) {
+                let undone = false;
+                for (let i = globalGestures.length - 1; i >= 0; i--) {
+                    if (globalGestures[i].gestureId === data.gestureId) {
+                        globalGestures.splice(i, 1);
+                        undone = true;
+                        break;
+                    }
+                }
+                if (undone) {
+                    reRenderHostCanvas();
+                }
+            }
+            break;
+
+        case 'CLEAR_MY_STROKES':
+            let changed = false;
+            for (let i = globalGestures.length - 1; i >= 0; i--) {
+                if (globalGestures[i].playerId === conn.peer) {
+                    globalGestures.splice(i, 1);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                reRenderHostCanvas();
             }
             break;
 
@@ -189,6 +238,7 @@ function startGame(mode) {
 
     if (mode === 'freeplay') {
         doodleCanvas.clear();
+        globalGestures = [];
         document.getElementById('battle-header').classList.add('hidden');
         if (btnResetCanvas) btnResetCanvas.style.display = 'flex';
         if (gameTimer) gameTimer.style.display = 'none';
@@ -202,7 +252,27 @@ function startGame(mode) {
 function resetCanvasHost() {
     if (currentMode === 'freeplay') {
         doodleCanvas.clear();
+        globalGestures = [];
         broadcast({ type: 'CLEAR_CANVAS' });
+    }
+}
+
+function reRenderHostCanvas() {
+    doodleCanvas.clear();
+    for (const g of globalGestures) {
+        for (const stroke of g.strokes) {
+            doodleCanvas.drawStroke(stroke);
+        }
+    }
+
+    if (currentMode === 'freeplay') {
+        broadcast({ type: 'CLEAR_CANVAS' });
+        // After clearing clients, re-broadcast all remaining strokes to all clients
+        for (const g of globalGestures) {
+            for (const stroke of g.strokes) {
+                broadcast({ type: 'DRAW', stroke: stroke });
+            }
+        }
     }
 }
 
@@ -210,6 +280,7 @@ function startBattleMode() {
     doodles = [];
     votes = {};
     doodleCanvas.clear();
+    globalGestures = [];
     
     const theme = themes[Math.floor(Math.random() * themes.length)];
     document.getElementById('battle-theme-name').innerText = `Tema: ${theme}`;

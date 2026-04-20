@@ -16,9 +16,10 @@ let currentBrushType = 'marker'; // New
 let currentOpacity = 1.0;
 let isEraser = false;
 
-// Undo system — each "undo unit" is a full pen-down → pen-up gesture
-let strokeHistory = [];   // Array of arrays: each sub-array = one gesture
+// Undo system
+let strokeHistory = [];   // Array of { gestureId, strokes: [] }
 let currentGesture = [];  // Strokes in the current pen-down
+let currentGestureId = null;
 
 function initClient() {
     doodleCanvas = new DoodleCanvas('mobile-canvas');
@@ -86,7 +87,7 @@ function handleHostData(data) {
             // Show/hide undo based on mode
             const undoBtn = document.getElementById('undo-btn');
             if (undoBtn) {
-                undoBtn.style.display = (data.mode === 'battle') ? 'flex' : 'none';
+                undoBtn.style.display = 'flex'; // Undo is now always available
             }
             break;
 
@@ -142,8 +143,8 @@ function handleHostData(data) {
         case 'CLEAR_CANVAS':
             if (doodleCanvas) {
                 doodleCanvas.clear();
-                strokeHistory = [];
-                currentGesture = [];
+                // When we receive CLEAR_CANVAS in freeplay for host sync, we keep strokeHistory intact 
+                // so we can still undo our own strokes later.
             }
             break;
     }
@@ -160,6 +161,7 @@ function setupDrawingEvents() {
     const start = (e) => {
         isDrawing = true;
         currentGesture = [];
+        currentGestureId = Date.now().toString() + Math.random().toString().substr(2, 5);
         const pos = getPos(e);
         lastX = pos.x / canvas.width;
         lastY = pos.y / canvas.height;
@@ -186,14 +188,12 @@ function setupDrawingEvents() {
         // Draw locally
         doodleCanvas.drawStroke(stroke);
 
-        // Save for undo (battle mode)
-        if (currentMode === 'battle') {
-            currentGesture.push(stroke);
-        }
+        // Always save for undo
+        currentGesture.push(stroke);
 
-        // Send to host for real-time display
+        // Send to host
         if (conn && conn.open) {
-            conn.send({ type: 'DRAW', stroke: stroke });
+            conn.send({ type: 'DRAW', stroke: stroke, gestureId: currentGestureId });
         }
 
         lastX = currX;
@@ -203,7 +203,7 @@ function setupDrawingEvents() {
 
     const stop = () => {
         if (isDrawing && currentGesture.length > 0) {
-            strokeHistory.push([...currentGesture]);
+            strokeHistory.push({ gestureId: currentGestureId, strokes: [...currentGesture] });
             currentGesture = [];
         }
         isDrawing = false;
@@ -283,16 +283,21 @@ function clearCanvas() {
     doodleCanvas.clear();
     strokeHistory = [];
     currentGesture = [];
-    // Also clear host if possible? (Host only receives strokes, doesn't usually clear remotely unless mode changes)
+    if (conn && conn.open) conn.send({ type: 'CLEAR_MY_STROKES' });
 }
 
 function undoLastStroke() {
     if (strokeHistory.length === 0) return;
-    strokeHistory.pop();
-    // Replay all remaining strokes
+    const lastGestureObj = strokeHistory.pop();
+    
+    if (conn && conn.open) {
+        conn.send({ type: 'UNDO', gestureId: lastGestureObj.gestureId });
+    }
+
+    // Replay remaining local strokes
     doodleCanvas.clear();
-    for (const gesture of strokeHistory) {
-        for (const stroke of gesture) {
+    for (const gestureObj of strokeHistory) {
+        for (const stroke of gestureObj.strokes) {
             doodleCanvas.drawStroke(stroke);
         }
     }
