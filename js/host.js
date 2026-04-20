@@ -48,7 +48,8 @@ function initHost() {
         // Mark status as connected
         const statusEl = document.getElementById('connection-status');
         if (statusEl) {
-            statusEl.innerText = '🟢 Terhubung';
+            document.getElementById('status-text').innerText = 'Terhubung';
+            document.getElementById('status-icon').innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
             statusEl.style.color = 'var(--success)';
         }
     });
@@ -61,7 +62,8 @@ function initHost() {
         console.error('Peer error:', err);
         const statusEl = document.getElementById('connection-status');
         if (statusEl) {
-            statusEl.innerText = '🔴 Kesalahan Koneksi';
+            document.getElementById('status-text').innerText = 'Kesalahan Koneksi';
+            document.getElementById('status-icon').innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
             statusEl.style.color = 'var(--danger)';
         }
     });
@@ -161,10 +163,16 @@ function updatePlayerCount() {
     if (count === 0) {
         playerCountEl.innerHTML = `<span style="color: var(--text-muted);">Menunggu pemain... (0)</span>`;
     } else {
-        playerCountEl.innerHTML = `<span style="color: var(--success);">🎮 ${count} pemain bersiap!</span><br><small style="color: var(--text-muted);">${names.join(', ')}</small>`;
+        playerCountEl.innerHTML = `<span style="color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"></path></svg>
+            ${count} pemain bersiap!
+        </span><br><small style="color: var(--text-muted);">${names.join(', ')}</small>`;
     }
     
-    document.getElementById('active-players').innerText = `Pemain: ${count}`;
+    document.getElementById('active-players').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Pemain: ${count}</span>
+    `;
 }
 
 function startGame(mode) {
@@ -176,11 +184,25 @@ function startGame(mode) {
     // Broadcast mode change to all clients
     broadcast({ type: 'START_GAME', mode: mode });
 
+    const btnResetCanvas = document.getElementById('btn-reset-canvas');
+    const gameTimer = document.getElementById('game-timer');
+
     if (mode === 'freeplay') {
         doodleCanvas.clear();
         document.getElementById('battle-header').classList.add('hidden');
+        if (btnResetCanvas) btnResetCanvas.style.display = 'flex';
+        if (gameTimer) gameTimer.style.display = 'none';
     } else if (mode === 'battle') {
+        if (btnResetCanvas) btnResetCanvas.style.display = 'none';
+        if (gameTimer) gameTimer.style.display = 'block';
         startBattleMode();
+    }
+}
+
+function resetCanvasHost() {
+    if (currentMode === 'freeplay') {
+        doodleCanvas.clear();
+        broadcast({ type: 'CLEAR_CANVAS' });
     }
 }
 
@@ -190,7 +212,7 @@ function startBattleMode() {
     doodleCanvas.clear();
     
     const theme = themes[Math.floor(Math.random() * themes.length)];
-    document.getElementById('battle-theme').innerText = `🎨 Tema: ${theme}`;
+    document.getElementById('battle-theme-name').innerText = `Tema: ${theme}`;
     document.getElementById('battle-header').classList.remove('hidden');
     
     const selectedTime = parseInt(document.getElementById('battle-time-select').value) || 180;
@@ -253,7 +275,12 @@ async function startRevealProcess() {
         const totalScore = Object.values(votes).reduce((a, b) => a + b, 0);
         players[doodle.playerId].score += totalScore;
 
-        document.getElementById('reveal-title').innerText = `🎨 ${doodle.name} — Skor: ${totalScore}`;
+        document.getElementById('reveal-title').innerHTML = `
+            <span style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                ${doodle.name} — Skor: ${totalScore}
+            </span>
+        `;
         await new Promise(r => setTimeout(r, 3000)); // Show name for 3 seconds
     }
 
@@ -290,7 +317,10 @@ function showFinalResults() {
     
     let leaderboardHTML = '';
     sortedPlayers.forEach((p, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+        const medal = i === 0 ? '<svg style="color: gold;" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : 
+                      i === 1 ? '<svg style="color: silver;" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : 
+                      i === 2 ? '<svg style="color: #cd7f32;" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : 
+                      `#${i + 1}`;
         const isWinner = i === 0;
         leaderboardHTML += `
             <div class="leaderboard-row ${isWinner ? 'winner-row' : ''}" style="animation-delay: ${i * 0.2}s;">

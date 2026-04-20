@@ -138,6 +138,14 @@ function handleHostData(data) {
                 doodleCanvas.drawStroke(data.stroke);
             }
             break;
+
+        case 'CLEAR_CANVAS':
+            if (doodleCanvas) {
+                doodleCanvas.clear();
+                strokeHistory = [];
+                currentGesture = [];
+            }
+            break;
     }
 }
 
